@@ -1,0 +1,16 @@
+@tailwind base;@tailwind components;@tailwind utilities;
+@layer base{:root{--forest:15 42 29;--olive:55 85 52;--sage:107 144 113;--soft:174 195 176;--ivory:227 238 212;--radius:0px;--font-serif:"Instrument Serif";--font-sans:"Hanken Grotesk"}}
+body{@apply bg-ivory text-forest font-sans font-light antialiased}
+:focus-visible{outline:2px solid #375534;outline-offset:3px}
+.btn{@apply inline-block border border-forest px-8 py-3.5 text-xs tracking-[.2em] uppercase transition-colors duration-300}
+.btn-dark{@apply bg-forest text-ivory hover:bg-olive hover:border-olive}
+.btn-line{@apply hover:bg-forest hover:text-ivory}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.btn{border-radius:var(--radius)}
+html[data-reveal=on] .rv{opacity:0;transform:translateY(28px);transition:opacity .9s ease,transform .9s cubic-bezier(.2,.7,.2,1)}
+html[data-reveal=on] .rv.in{opacity:1;transform:none}
+html[data-hover=off] .pc-a{opacity:1!important;transform:none!important}
+html[data-hover=off] .pc-b{opacity:0!important;transform:none!important}
+html[data-btn=solid] .btn-line{background:rgb(var(--forest));color:rgb(var(--ivory))}
+html[data-footer=light] footer{background:rgb(var(--soft));color:rgb(var(--forest))}
+html[data-footer=light] footer .text-soft,html[data-footer=light] footer .text-sage{color:rgb(var(--olive))}

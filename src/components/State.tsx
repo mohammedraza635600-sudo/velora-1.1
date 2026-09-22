@@ -1,0 +1,1 @@
+export const Notice=({title,text}:{title:string;text?:string})=><div className="py-40 text-center px-6"><h2 className="font-serif text-4xl">{title}</h2>{text&&<p className="mt-3 text-olive">{text}</p>}</div>

@@ -1,1 +1,3 @@
 export const Notice=({title,text}:{title:string;text?:string})=><div className="py-40 text-center px-6"><h2 className="font-serif text-4xl">{title}</h2>{text&&<p className="mt-3 text-olive">{text}</p>}</div>
+export const ProductGridSkeleton=({count=8}:{count?:number})=><div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 md:gap-x-8 gap-y-12" aria-hidden="true">
+  {Array.from({length:count}).map((_,i)=><div key={i} className="animate-pulse"><div className="aspect-[3/4] bg-soft/50"/><div className="mt-4 flex justify-between gap-4"><div className="space-y-2 flex-1"><div className="h-3 w-2/3 bg-soft/50"/><div className="h-3 w-1/3 bg-soft/40"/></div><div className="h-3 w-10 bg-soft/50"/></div></div>)}</div>

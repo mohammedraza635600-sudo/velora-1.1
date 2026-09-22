@@ -1,30 +1,31 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { useProducts } from '../hooks/useProducts'
-import { supabase, configured } from '../lib/supabase'
-import { subscribe, useSeo } from '../lib/cms'
-import Hero from '../components/Hero'
-import ProductCard, { Placeholder } from '../components/ProductCard'
+import ProductCard from '../components/ProductCard'
 import { Notice } from '../components/State'
-import { CATEGORIES, imgs } from '../types'
-const DEF:any[]=['new_arrivals','featured','categories','story','philosophy','campaign','newsletter'].map(key=>({key,visible:true,padding_y:96}))
-const CLS:Record<string,string>={philosophy:'bg-olive text-ivory',campaign:'bg-forest text-ivory text-center relative overflow-hidden',newsletter:'bg-soft/50 text-center'}
-const H=({s,d}:{s:any;d:string})=><div className="mb-10"><h2 className="font-serif text-5xl md:text-7xl">{s.title||d}</h2>{s.subtitle&&<p className="mt-3 text-olive max-w-xl">{s.subtitle}</p>}</div>
-export default function Home(){
-  const {products,loading,error}=useProducts();const [secs,setSecs]=useState<any[]>(DEF);const [ok,setOk]=useState('');useSeo("VELORA — Premium Men's Clothing",'Luxury menswear designed for a refined everyday wardrobe.')
-  useEffect(()=>{if(configured)supabase.from('homepage_sections').select('*').order('position').then(({data})=>data?.length&&setSecs(data))},[])
-  useEffect(()=>{const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.1});document.querySelectorAll('.rv').forEach(n=>io.observe(n));return()=>io.disconnect()},[secs,products.length])
-  const hero=products.find(p=>p.is_featured)||products[0]
-  const grid=(l:typeof products,scroll=false)=>loading?<p className="py-16 text-center text-olive">Loading the collection…</p>:error?<Notice title="Collection unavailable" text={error}/>:!l.length?<Notice title="Nothing here yet" text="Add products in Admin."/>:
-    scroll?<div className="flex gap-6 overflow-x-auto snap-x pb-4">{l.map(p=><div key={p.id} className="w-64 shrink-0 snap-start"><ProductCard p={p}/></div>)}</div>:<div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 md:gap-x-8 gap-y-12">{l.map(p=><ProductCard key={p.id} p={p}/>)}</div>
-  const body=(s:any)=>{switch(s.key){
-    case 'new_arrivals':return <><H s={s} d="The latest edit"/>{grid(products.filter(p=>p.is_new).slice(0,4))}</>
-    case 'featured':return <><H s={s} d="Featured collection"/>{grid(products.filter(p=>p.is_featured),true)}</>
-    case 'categories':return <><H s={s} d="Shop by category"/><div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">{CATEGORIES.map((c,i)=>{const p=products.find(x=>x.category===c),im=p&&imgs(p)[0]
-      return <Link key={c} to={`/shop?cat=${c}`} className={`group relative overflow-hidden bg-soft/50 ${i%3===1?'aspect-[3/4] md:mt-12':'aspect-[4/5]'}`}>{im?<img src={im} alt={c} loading="lazy" className="absolute inset-0 w-full h-full object-cover transition duration-1000 group-hover:scale-105"/>:<Placeholder label={c}/>}<span className="absolute left-4 bottom-4 font-serif text-2xl md:text-4xl text-ivory capitalize">{c.replace('-',' ')}</span></Link>})}</div></>
-    case 'story':return <div className="grid md:grid-cols-2 gap-10 items-center"><div className="aspect-[4/5] bg-soft/50">{s.video_url?<video src={s.video_url} autoPlay muted loop playsInline className="w-full h-full object-cover"/>:s.image_url?<img src={s.image_url} alt="" loading="lazy" className="w-full h-full object-cover"/>:<Placeholder label="Story image"/>}</div><div><H s={s} d="Built for the way you move."/><Link to="/about" className="btn btn-line">Our story</Link></div></div>
-    case 'philosophy':return <><H s={s} d="Philosophy"/><div className="grid md:grid-cols-5 gap-10">{[['Precision','Patterns cut and checked to the millimetre.'],['Quality','Fabrics chosen for how they age.'],['Form','A silhouette that holds its line.'],['Comfort','Made to be worn every day.'],['Craftsmanship','Finished by hand where it matters.']].map(([t,d])=><div key={t}><h3 className="font-serif text-3xl">{t}</h3><p className="mt-3 text-soft text-sm">{d}</p></div>)}</div></>
-    case 'campaign':return <>{s.video_url?<video src={s.video_url} autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover opacity-50"/>:s.image_url&&<img src={s.image_url} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover opacity-50"/>}<div className="relative"><p className="font-serif text-4xl tracking-[.4em]">VELORA</p><h2 className="font-serif text-5xl md:text-8xl mt-6">{s.title||'Essentials, redefined.'}</h2><Link to="/shop" className="btn border-ivory hover:bg-ivory hover:text-forest mt-10">Shop now</Link></div></>
-    case 'newsletter':return <><H s={s} d="Join the VELORA list"/><form className="max-w-md mx-auto flex gap-3" onSubmit={async e=>{e.preventDefault();const f=e.currentTarget;setOk(await subscribe(String(new FormData(f).get('email')))?'Thank you. You are on the list.':'Could not sign you up. Try again.');f.reset()}}><input name="email" type="email" required placeholder="Email address" aria-label="Email" className="flex-1 bg-transparent border-b border-forest py-2"/><button className="btn btn-dark">Join</button></form>{ok&&<p role="status" className="mt-4 text-sm">{ok}</p>}</>
-    default:return null}}
-  return <><Hero fallbackImg={hero&&imgs(hero)[0]}/>{secs.filter(s=>s.visible).map(s=><section key={s.key} style={{background:s.bg_color||undefined,paddingTop:s.padding_y,paddingBottom:s.padding_y}} className={`rv px-5 md:px-10 ${CLS[s.key]||''}`}>{body(s)}</section>)}</>}
+import { CATEGORIES } from '../types'
+import { useSettings, lines, useSeo } from '../lib/cms'
+import { supabase, configured } from '../lib/supabase'
+export default function Shop(){
+  const {products,loading,error}=useProducts();const st=useSettings('search',{}) as any;const [cr,setCr]=useState<any>(null);const [sp,setSp]=useSearchParams();const ref=useRef<HTMLInputElement>(null)
+  const q=sp.get('q')||'',cat=sp.get('cat')||'',size=sp.get('size')||'',color=sp.get('color')||'',max=Number(sp.get('max')||0),sort=sp.get('sort')||'',isNew=sp.get('new')==='1'
+  const set=(k:string,v:string)=>{const n=new URLSearchParams(sp);v?n.set(k,v):n.delete(k);setSp(n,{replace:true})}
+  useEffect(()=>{const c=sp.get('cat');if(!c||!configured){setCr(null);return}supabase.from('categories').select('*').eq('slug',c).maybeSingle().then(({data})=>setCr(data))},[sp])
+  useSeo(cr?.seo_title||`${cat||'Clothing'} | VELORA`,cr?.seo_description||undefined)
+  useEffect(()=>{if(sp.get('focus'))ref.current?.focus()},[sp])
+  const colors=useMemo(()=>[...new Set(products.map(p=>p.color))],[products]);const sizes=useMemo(()=>[...new Set(products.flatMap(p=>p.sizes||[]))],[products])
+  const list=products.filter(p=>(!cat||p.category===cat)&&(!isNew||p.is_new)&&(!size||p.sizes?.includes(size))&&(!color||p.color===color)&&(!max||p.price<=max)&&(!q||`${p.name} ${p.category} ${p.color}`.toLowerCase().includes(q.toLowerCase())))
+    .sort((a,b)=>sort==='low'?a.price-b.price:sort==='high'?b.price-a.price:0)
+  const sel="bg-transparent border-b border-sage py-2 text-sm"
+  return <div className="pt-28 px-5 md:px-10">{cr?.banner_url&&<img src={cr.banner_url} alt="" className="w-full h-48 md:h-72 object-cover mb-8"/>}<h1 className="font-serif text-5xl md:text-7xl capitalize">{isNew?'New arrivals':cat?cat.replace('-',' '):'Clothing'}</h1>{cr?.description&&<p className="mt-4 max-w-xl text-olive">{cr.description}</p>}
+    <div className="mt-10 flex flex-wrap gap-x-6 gap-y-4 items-end border-b border-soft pb-6">
+      <input ref={ref} value={q} onChange={e=>set('q',e.target.value)} placeholder="Search VELORA" aria-label="Search" className={`${sel} w-full md:w-64`}/>
+      {lines(st.trending+'\n'+st.suggested).length>0&&<div className="w-full flex flex-wrap gap-4 text-xs">{lines(st.trending+'\n'+st.suggested).map(t=><button key={t} onClick={()=>set('q',t)} className="underline underline-offset-4">{t}</button>)}</div>}
+      <select aria-label="Category" value={cat} onChange={e=>set('cat',e.target.value)} className={sel}><option value="">All categories</option>{CATEGORIES.map(c=><option key={c} value={c}>{c.replace('-',' ')}</option>)}</select>
+      <select aria-label="Size" value={size} onChange={e=>set('size',e.target.value)} className={sel}><option value="">Any size</option>{sizes.map(s=><option key={s}>{s}</option>)}</select>
+      <select aria-label="Color" value={color} onChange={e=>set('color',e.target.value)} className={sel}><option value="">Any color</option>{colors.map(s=><option key={s}>{s}</option>)}</select>
+      <select aria-label="Price" value={max||''} onChange={e=>set('max',e.target.value)} className={sel}><option value="">Any price</option><option value="3000">Up to ₹3,000</option><option value="6000">Up to ₹6,000</option><option value="10000">Up to ₹10,000</option></select>
+      <select aria-label="Sort" value={sort} onChange={e=>set('sort',e.target.value)} className={sel}><option value="">Featured</option><option value="low">Price, low to high</option><option value="high">Price, high to low</option></select></div>
+    {loading?<p className="py-32 text-center text-olive">Loading the collection…</p>:error?<Notice title="Collection unavailable" text={error}/>:!list.length?<Notice title="Nothing matches" text="Clear a filter or try another search."/>:
+    <motion.div layout className="mt-10 grid grid-cols-2 lg:grid-cols-4 gap-x-4 md:gap-x-8 gap-y-12">{list.map(p=><motion.div layout key={p.id} initial={{opacity:0}} animate={{opacity:1}}><ProductCard p={p}/></motion.div>)}</motion.div>}</div>}

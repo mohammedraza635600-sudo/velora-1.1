@@ -14,3 +14,5 @@ html[data-hover=off] .pc-b{opacity:0!important;transform:none!important}
 html[data-btn=solid] .btn-line{background:rgb(var(--forest));color:rgb(var(--ivory))}
 html[data-footer=light] footer{background:rgb(var(--soft));color:rgb(var(--forest))}
 html[data-footer=light] footer .text-soft,html[data-footer=light] footer .text-sage{color:rgb(var(--olive))}
+@media (hover:none),(pointer:coarse){.pc-actions{transform:none!important}}
+.hdr-util{padding:.35rem .1rem;font-size:.75rem;font-weight:500;letter-spacing:.16em}

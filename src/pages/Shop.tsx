@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useProducts } from '../hooks/useProducts'
 import ProductCard from '../components/ProductCard'
-import { Notice } from '../components/State'
+import { Notice, ProductGridSkeleton } from '../components/State'
 import { CATEGORIES } from '../types'
 import { useSettings, lines, useSeo } from '../lib/cms'
 import { supabase, configured } from '../lib/supabase'
@@ -27,5 +27,5 @@ export default function Shop(){
       <select aria-label="Color" value={color} onChange={e=>set('color',e.target.value)} className={sel}><option value="">Any color</option>{colors.map(s=><option key={s}>{s}</option>)}</select>
       <select aria-label="Price" value={max||''} onChange={e=>set('max',e.target.value)} className={sel}><option value="">Any price</option><option value="3000">Up to ₹3,000</option><option value="6000">Up to ₹6,000</option><option value="10000">Up to ₹10,000</option></select>
       <select aria-label="Sort" value={sort} onChange={e=>set('sort',e.target.value)} className={sel}><option value="">Featured</option><option value="low">Price, low to high</option><option value="high">Price, high to low</option></select></div>
-    {loading?<p className="py-32 text-center text-olive">Loading the collection…</p>:error?<Notice title="Collection unavailable" text={error}/>:!list.length?<Notice title="Nothing matches" text="Clear a filter or try another search."/>:
+    {loading?<div className="mt-10"><ProductGridSkeleton/></div>:error?<Notice title="Collection unavailable" text={error}/>:!list.length?<Notice title="Nothing matches" text="Clear a filter or try another search."/>:
     <motion.div layout className="mt-10 grid grid-cols-2 lg:grid-cols-4 gap-x-4 md:gap-x-8 gap-y-12">{list.map(p=><motion.div layout key={p.id} initial={{opacity:0}} animate={{opacity:1}}><ProductCard p={p}/></motion.div>)}</motion.div>}</div>}

@@ -5,7 +5,7 @@ import { supabase, configured } from '../lib/supabase'
 import { subscribe, useSeo } from '../lib/cms'
 import Hero from '../components/Hero'
 import ProductCard, { Placeholder } from '../components/ProductCard'
-import { Notice } from '../components/State'
+import { Notice, ProductGridSkeleton } from '../components/State'
 import { CATEGORIES, imgs } from '../types'
 const DEF:any[]=['new_arrivals','featured','categories','story','philosophy','campaign','newsletter'].map(key=>({key,visible:true,padding_y:96}))
 const CLS:Record<string,string>={philosophy:'bg-olive text-ivory',campaign:'bg-forest text-ivory text-center relative overflow-hidden',newsletter:'bg-soft/50 text-center'}
@@ -15,7 +15,7 @@ export default function Home(){
   useEffect(()=>{if(configured)supabase.from('homepage_sections').select('*').order('position').then(({data})=>data?.length&&setSecs(data))},[])
   useEffect(()=>{const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.1});document.querySelectorAll('.rv').forEach(n=>io.observe(n));return()=>io.disconnect()},[secs,products.length])
   const hero=products.find(p=>p.is_featured)||products[0]
-  const grid=(l:typeof products,scroll=false)=>loading?<p className="py-16 text-center text-olive">Loading the collection…</p>:error?<Notice title="Collection unavailable" text={error}/>:!l.length?<Notice title="Nothing here yet" text="Add products in Admin."/>:
+  const grid=(l:typeof products,scroll=false)=>loading?<ProductGridSkeleton count={4}/>:error?<Notice title="Collection unavailable" text={error}/>:!l.length?<Notice title="Nothing here yet" text="Add products in Admin."/>:
     scroll?<div className="flex gap-6 overflow-x-auto snap-x pb-4">{l.map(p=><div key={p.id} className="w-64 shrink-0 snap-start"><ProductCard p={p}/></div>)}</div>:<div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 md:gap-x-8 gap-y-12">{l.map(p=><ProductCard key={p.id} p={p}/>)}</div>
   const body=(s:any)=>{switch(s.key){
     case 'new_arrivals':return <><H s={s} d="The latest edit"/>{grid(products.filter(p=>p.is_new).slice(0,4))}</>
